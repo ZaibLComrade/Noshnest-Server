@@ -18,12 +18,18 @@ const client = new MongoClient(uri, {
 	}
 })
 
-const products = client.db("products_collection").collection("products")
+const productsCollection = client.db("NoshNest").collection("products");
+const brandsCollection = client.db("NoshNest").collection("brands");
 
 app.post("/products", async(req, res) => {
-	const product = req.body;
+	const productsCollection = req.body;
 	const result = await products.insertOne(product);
 	res.send(result);
+})
+
+app.get("/brands", async(req, res) => {
+	const brands = await brandsCollection.find().toArray();
+	res.send(brands);
 })
 
 app.get("/", (req, res) => {
