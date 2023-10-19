@@ -113,6 +113,3 @@ app.get("/", (req, res) => {
 })
 
 app.listen(port)
-
-USER_NAME=kmjahanzaib
-USER_PASS=6FU1KjZYFhi9E5NA
