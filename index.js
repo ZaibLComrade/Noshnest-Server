@@ -32,6 +32,7 @@ app.post("/products", async(req, res) => {
 
 app.post("/users", async(req, res) => {
 	const userData = req.body;
+	userData.cart = [];
 	const result = await usersCollection.insertOne(userData)
 	res.send(result);
 })
@@ -42,7 +43,7 @@ app.patch("/users/:email", async(req, res) => {
 	const filter = { email };
 	const doc = {
 		$set: {
-			lastSignInTime: updatedData.lastSignInTime,
+			lastSignInTime: updatedData?.lastSignInTime,
 			cart: updatedData?.cart,
 		}
 	}
@@ -69,6 +70,16 @@ app.put("/products/:id", async(req, res) => {
 	res.send(result);
 })
 
+app.get("/cart/:email" , async(req, res) => {
+	const email = req.params.email;
+	// console.log(email);
+	const query = { email };
+	const result = await usersCollection.findOne(query);
+	console.log(result.cart);
+	// const cart = result.cart;
+	// res.send(cart);
+})
+
 app.get("/users", async(req, res) => {
 	const users = await usersCollection.find().toArray();
 	res.send(users);
@@ -93,7 +104,7 @@ app.get("/products/brands/:brand", async(req, res) => {
 	const brandInfo = await brandsCollection.findOne(brandQuery);
 	const productQuery = { brand_name: brandInfo.brand_name };
 	const productInfo = await productsCollection.find(productQuery).toArray();
-	res.send(productInfo);
+	res.send({ productInfo, brandInfo });
 }) 
 
 
