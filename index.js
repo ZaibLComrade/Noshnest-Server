@@ -37,6 +37,43 @@ app.post("/users", async(req, res) => {
 	res.send(result);
 })
 
+app.patch("/cart/:userId", async(req, res) => {
+	const userId = req.params.userId;
+	const { idx: index } = req.body;
+	const query = { _id: new ObjectId(userId) };
+	const user = await usersCollection.findOne(query);
+	const cart = user.cart;
+	const updatedCart = cart.filter((item, idx) => idx !== index);
+	const doc = {
+		$set: {
+			cart: updatedCart,
+		}
+	}
+	const result = await usersCollection.updateOne(query, doc)
+	if(result.acknowledged) res.send(updatedCart);
+}) 
+
+app.patch("/userdetails/:id", async(req, res) => {
+	const id = req.params.id;
+	const productInfo = req.body;
+	const query = { _id: new ObjectId(id) };
+	
+	const user = await usersCollection.findOne(query);
+	
+	const newCart = user.cart;
+	
+	newCart.push(productInfo);
+	
+	const updatedDoc = {
+		$set: {
+			cart: newCart,
+		}
+	}
+	
+	const result = await usersCollection.updateOne(query, updatedDoc);
+	res.send(result);
+})
+
 app.patch("/users/:email", async(req, res) => {
 	const email = req.params.email;
 	const updatedData = req.body;
@@ -44,7 +81,6 @@ app.patch("/users/:email", async(req, res) => {
 	const doc = {
 		$set: {
 			lastSignInTime: updatedData?.lastSignInTime,
-			cart: updatedData?.cart,
 		}
 	}
 	const result = await usersCollection.updateOne(filter, doc);
@@ -70,14 +106,18 @@ app.put("/products/:id", async(req, res) => {
 	res.send(result);
 })
 
-app.get("/cart/:email" , async(req, res) => {
+app.get("/users/user-exists/:email", async(req, res) => {
 	const email = req.params.email;
-	// console.log(email);
 	const query = { email };
 	const result = await usersCollection.findOne(query);
-	console.log(result.cart);
-	// const cart = result.cart;
-	// res.send(cart);
+	res.send(result || JSON.stringify("user-not-found"));
+})
+
+app.get("/users/:email" , async(req, res) => {
+	const email = req.params.email;
+	const query = { email };
+	const result = await usersCollection.findOne(query);
+	res.send(result?._id);
 })
 
 app.get("/users", async(req, res) => {
@@ -107,6 +147,20 @@ app.get("/products/brands/:brand", async(req, res) => {
 	res.send({ productInfo, brandInfo });
 }) 
 
+app.get("/cart/:id", async(req, res) => {
+	const id = req.params.id;
+	let _id;
+	try {
+		_id = new ObjectId(id);
+	}
+	catch {
+		res.send(null);
+	}
+	const query = { _id };	
+	const user = await usersCollection.findOne(query);
+	const cart = user?.cart;
+	res.send(cart);
+})
 
 app.get("/", (req, res) => {
 	res.send("Server is running");
