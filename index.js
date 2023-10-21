@@ -116,8 +116,12 @@ app.get("/users/user-exists/:email", async(req, res) => {
 app.get("/users/:email" , async(req, res) => {
 	const email = req.params.email;
 	const query = { email };
-	const result = await usersCollection.findOne(query);
-	res.send(result?._id);
+	let user = await usersCollection.findOne(query);
+	if(!user) {
+		const createEntry = await usersCollection.insertOne({email, cart:[]});
+		if(createEntry.acknowledged) user = await usersCollection.findOne(query);
+	}
+	res.send(user?._id);
 })
 
 app.get("/users", async(req, res) => {
